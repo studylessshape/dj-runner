@@ -16,7 +16,7 @@ pub fn get_input() -> Result<Option<Expr>, RunnerError> {
     stdout.flush()?;
     // position and width will help to show the input
     let mut position = cursor::position()?;
-    let width = 100.min(terminal::size()?.0) - 2;
+    let width = 50.min(terminal::size()?.0) - 2;
 
     let mut expr_input = String::new();
     let mut input = Input::new(String::new());
