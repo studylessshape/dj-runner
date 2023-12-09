@@ -10,6 +10,7 @@ fn main() {
     builtin_method(&mut env);
 
     let cli = Commands::parse();
+
     match cli.file_path {
         Some(path) => run_file(&mut env, &path),
         None => console_runner(&mut env),
@@ -48,7 +49,7 @@ fn run_file(env: &mut Environment, path: &str) {
             while let Some(tok) = fullts.pop() {
                 println!("{tok:?}");
             }
-            panic!("parsing error.");
+            println!("parsing error.");
         }
     };
 }
