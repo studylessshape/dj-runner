@@ -177,7 +177,7 @@ pub fn get_input(expr_input: &mut ExprInput) -> Result<Option<Expr>, RunnerError
                         Err(InterpretError::Syntax(dj::SyntaxError::RequrieToken(Token::End(
                             _,
                         )))) => {
-                            queue!(stdout, style::Print("\n"))?;
+                            queue!(stdout, style::Print("\n\r"))?;
                             stdout.flush()?;
                             expr_input.position = cursor::position()?;
                             expr_input.write(&mut stdout)?;
