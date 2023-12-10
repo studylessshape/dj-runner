@@ -22,8 +22,26 @@ pub fn builtin_method(env: &mut Environment) {
 /// ```dj
 /// (exit)
 /// ```
-fn builtin_exit(_env: &mut Environment, _para: &[Expr]) -> Result<Value, RuntimeError> {
-    process::exit(0);
+/// 
+/// Or you can specify the exit code like:
+/// ```dj
+/// (exit 1)
+/// ```
+fn builtin_exit(env: &mut Environment, para: &[Expr]) -> Result<Value, RuntimeError> {
+    let len = para.len();
+    let exit_code;
+    match len {
+        0 => exit_code = 0,
+        1 => {
+            let code = para[0].eval(env)?;
+            match code {
+                Value::Integer(code) => exit_code = code,
+                _ => return Err(RuntimeError::TypeMismatch(code)),
+            }
+        }
+        _ => return Err(RuntimeError::TooManyArguments { at_most: 1 })
+    }
+    process::exit(exit_code);
 }
 
 /// Command like:
