@@ -2,7 +2,7 @@ use std::{fs::File, io::Read};
 
 use clap::Parser;
 use dj::{Environment, TokenStream, ast::Value};
-use dj_runner::{builtin_method, commands::Commands, handle_input::get_input, parse_expr};
+use dj_runner::{builtin_method, commands::Commands, handle_input::{get_input, ExprInput}, parse_expr};
 
 fn main() {
     let mut env = Environment::new();
@@ -58,8 +58,9 @@ fn console_runner(env: &mut Environment) {
     println!("dj-runner -- Version {}", env!("CARGO_PKG_VERSION"));
     println!("(core) dj language(dj-rs) -- Version {}", "0.1.0");
 
+    let mut expr_input = ExprInput::new();
     loop {
-        match get_input() {
+        match get_input(&mut expr_input) {
             Ok(Some(ex)) => match ex.eval(env) {
                 Ok(val) => {
                     match val {
@@ -72,5 +73,6 @@ fn console_runner(env: &mut Environment) {
             Err(err) => println!("{:?}", err),
             _ => {}
         }
+        expr_input.reset();
     }
 }
