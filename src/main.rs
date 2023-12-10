@@ -1,7 +1,7 @@
 use std::{fs::File, io::Read};
 
 use clap::Parser;
-use dj::{Environment, TokenStream};
+use dj::{Environment, TokenStream, ast::Value};
 use dj_runner::{builtin_method, commands::Commands, handle_input::get_input, parse_expr};
 
 fn main() {
@@ -61,7 +61,12 @@ fn console_runner(env: &mut Environment) {
     loop {
         match get_input() {
             Ok(Some(ex)) => match ex.eval(env) {
-                Ok(val) => println!("{}", val),
+                Ok(val) => {
+                    match val {
+                        Value::Nil => println!(),
+                        _ => println!("{}", val)
+                    };
+                },
                 Err(err) => println!("{:?}", err),
             },
             Err(err) => println!("{:?}", err),
