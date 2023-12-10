@@ -2,6 +2,7 @@
 name = "dj-runner"
 version = "0.2.0"
 edition = "2021"
+description = "[dj-runner] is the console that can run [dj] directly by sentence or file.\nRunning [dj-runner] directly will enter real-time mode. You can use `control + c` to exit program or specify the file to run."
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
