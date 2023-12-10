@@ -56,9 +56,6 @@ pub fn get_input() -> Result<Option<Expr>, RunnerError> {
                     position.1 += 1;
                     input.reset();
 
-                    queue!(stdout, style::Print("\n"))?;
-                    stdout.flush()?;
-
                     match parse_expr(&expr_input) {
                         Ok(expr) => {
                             // leave input
@@ -68,6 +65,9 @@ pub fn get_input() -> Result<Option<Expr>, RunnerError> {
                         Err(InterpretError::Syntax(dj::SyntaxError::RequrieToken(Token::End(
                             _,
                         )))) => {
+                            queue!(stdout, style::Print("\n"))?;
+                            stdout.flush()?;
+
                             backend::write(
                                 &mut stdout,
                                 input.value(),
@@ -109,7 +109,7 @@ fn enter_input_mode(stdout: &mut StdoutLock) -> Result<(), RunnerError> {
 
 fn leave_input_mode(stdout: &mut StdoutLock) -> Result<(), RunnerError> {
     disable_raw_mode()?;
-    queue!(stdout, Show)?;
+    queue!(stdout, Show, style::Print("\n"))?;
     stdout.flush()?;
     Ok(())
 }
