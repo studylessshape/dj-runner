@@ -1,6 +1,6 @@
 use crate::{parse_expr, RunnerError};
 use crossterm::{
-    cursor::{self, Hide, Show},
+    cursor::{self, Hide, Show, MoveTo},
     event::{read, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers},
     queue, style,
     terminal::{self, disable_raw_mode, enable_raw_mode},
@@ -47,6 +47,7 @@ pub fn get_input() -> Result<Option<Expr>, RunnerError> {
                     return Ok(None);
                 }
                 KeyCode::Enter => {
+                    print_input(&mut stdout, &input, position, width)?;
                     if expr_input.len() != 0 {
                         expr_input.push('\n');
                     } else {
@@ -111,5 +112,15 @@ fn leave_input_mode(stdout: &mut StdoutLock) -> Result<(), RunnerError> {
     disable_raw_mode()?;
     queue!(stdout, Show, style::Print("\n"))?;
     stdout.flush()?;
+    Ok(())
+}
+
+fn print_input(stdout: &mut StdoutLock, input: &Input, (column, row): (u16, u16), width: u16) -> Result<(), RunnerError> {
+    let width = width as usize;
+    let mut print_str = String::from(input.value());
+    if print_str.len() <= width {
+        print_str.push_str(&vec![' '; width - print_str.len() + 1].into_iter().collect::<String>());
+    }
+    queue!(stdout, MoveTo(column, row), style::Print(print_str))?;
     Ok(())
 }
