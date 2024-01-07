@@ -74,7 +74,7 @@ impl ExprInput {
     pub fn record(&mut self) {
         // record current input
         if self.input.value().len() != 0 {
-            self.history.push(self.input.value().to_string());
+            self.history.push(self.input.value().trim_end().to_string());
             self.his_index = None;
         }
         // push in total

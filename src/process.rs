@@ -11,6 +11,8 @@ pub fn builtin_method(env: &mut Environment) {
     env.set("println", Value::Builtin(builtin_println));
     let _ = builtin!(env, builtin_print);
     let _ = builtin!(env, builtin_load);
+    let _ = builtin!(env, builtin_rem);
+    let _ = builtin!(env, builtin_pow);
 }
 
 /// exit program
@@ -95,4 +97,37 @@ fn builtin_println(env: &mut Environment, params: &[Expr]) -> Result<Value, Runt
         }
     }
     Ok(Value::Nil)
+}
+
+#[builtin_method("%")]
+fn builtin_rem(a: Value, b: Value) -> Result<Value, RuntimeError> {
+    let a = match a {
+        Value::Integer(integer) => integer as f32,
+        Value::Decimal(decimal) => decimal,
+        _ => return Err(RuntimeError::TypeMismatch(a)),
+    };
+
+    let b = match b {
+        Value::Integer(integer) => integer as f32,
+        Value::Decimal(decimal) => decimal,
+        _ => return Err(RuntimeError::TypeMismatch(b)),
+    };
+    Ok((a % b).into())
+}
+
+#[builtin_method("^")]
+fn builtin_pow(val: Value, pow: Value) -> Result<Value, RuntimeError> {
+    let val = match val {
+        Value::Integer(integer) => integer as f32,
+        Value::Decimal(decimal) => decimal,
+        _ => return Err(RuntimeError::TypeMismatch(val)),
+    };
+
+    let pow = match pow {
+        Value::Integer(integer) => integer as f32,
+        Value::Decimal(decimal) => decimal,
+        _ => return Err(RuntimeError::TypeMismatch(pow)),
+    };
+
+    Ok(val.powf(pow).into())
 }
