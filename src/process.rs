@@ -74,9 +74,9 @@ fn builtin_print(content: Value) -> Result<Value, RuntimeError> {
 /// (println "Hello, World")
 /// ```
 #[builtin_method("println")]
-fn builtin_println(content: Option<String>) -> Result<Value, RuntimeError> {
+fn builtin_println(content: Option<Value>) -> Result<Value, RuntimeError> {
     match content {
-        Some(str) => println!("{str}"),
+        Some(val) => println!("{val}"),
         None => println!(),
     }
     Ok(Value::Nil)
