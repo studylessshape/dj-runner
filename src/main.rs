@@ -16,7 +16,7 @@ fn main() {
 
     match cli.file_path {
         Some(path) => run_file(&mut env, &path),
-        None => console_runner(&mut env),
+        None => console_runner(&mut env, cli.cut_input),
     }
 }
 
@@ -57,11 +57,11 @@ fn run_file(env: &mut Environment, path: &str) {
     };
 }
 
-fn console_runner(env: &mut Environment) {
+fn console_runner(env: &mut Environment, is_cut: bool) {
     println!("dj-runner -- Version {}", env!("CARGO_PKG_VERSION"));
     println!("(core) dj language(dj-rs) -- Version {}", "0.1.1");
 
-    let mut expr_input = ExprInput::new();
+    let mut expr_input = ExprInput::new(is_cut);
     loop {
         match get_input(&mut expr_input) {
             Ok(Some(ex)) => match ex.eval(env) {

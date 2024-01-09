@@ -6,7 +6,7 @@ use crossterm::{
     style::{self, Stylize},
     terminal::{self, disable_raw_mode, enable_raw_mode},
 };
-use dj::{ast::Expr, InterpretError, Token, parse};
+use dj::{ast::Expr, parse, InterpretError, Token};
 use std::io::{stdout, StdoutLock, Write};
 use tui_input::{backend::crossterm as backend, StateChanged};
 use tui_input::{backend::crossterm::EventHandler, Input};
@@ -19,11 +19,16 @@ pub struct ExprInput {
     pub width: u16,
     history: Vec<String>,
     his_index: Option<usize>,
+    line: usize,
+    is_cut: bool,
 }
 
 impl ExprInput {
-    pub fn new() -> Self {
-        Default::default()
+    pub fn new(is_cut: bool) -> Self {
+        Self {
+            is_cut,
+            ..Default::default()
+        }
     }
 
     pub fn expr(&self) -> &str {
@@ -34,11 +39,13 @@ impl ExprInput {
         self.input.reset();
         self.total.clear();
         self.his_index = None;
+        self.line = 0;
     }
 
     pub fn handle_input_event(&mut self, event: &Event) -> Option<StateChanged> {
         self.input.handle_event(event)
     }
+
     /// Call [tui_input::backend::crossterm::write]
     pub fn write(&self, stdout: &mut StdoutLock) -> Result<()> {
         backend::write(
@@ -57,7 +64,11 @@ impl ExprInput {
         let width = self.width as usize;
         let (column, row) = self.position;
 
-        let mut print_str = String::from(self.input.value());
+        let mut print_str = if self.is_cut {
+            self.input.value()[..self.input.cursor()].to_string()
+        } else {
+            self.input.value().to_string()
+        };
         if print_str.len() <= width {
             print_str.push_str(
                 &vec![' '; width - print_str.len() + 1]
@@ -72,17 +83,37 @@ impl ExprInput {
 
     /// Record current input to history and total string, and reset input for next
     pub fn record(&mut self) {
+        let push_expr = if self.is_cut {
+            self.input.value()[..self.input.cursor()]
+                .trim_end()
+                .to_string()
+        } else {
+            self.input.value().trim_end().to_string()
+        };
         // record current input
         if self.input.value().len() != 0 {
-            self.history.push(self.input.value().trim_end().to_string());
+            if self.is_cut {
+                self.history.push(push_expr.clone());
+            } else {
+                self.history.push(push_expr.clone());
+            }
             self.his_index = None;
         }
         // push in total
         if self.total.len() != 0 {
             self.total.push('\n');
         }
-        self.total.push_str(self.input.value());
-        self.input.reset();
+        self.total.push_str(&push_expr);
+    }
+
+    /// Clear input
+    pub fn clear(&mut self) {
+        if self.is_cut {
+            let after_expr = self.input.value()[self.input.cursor()..].to_string();
+            self.input = Input::new(after_expr).with_cursor(0);
+        } else {
+            self.input.reset();
+        }
     }
 
     /// Set input to pre history
@@ -165,8 +196,9 @@ pub fn get_input(expr_input: &mut ExprInput) -> Result<Option<Expr>> {
                     expr_input.write(&mut stdout)?;
                 }
                 KeyCode::Enter => {
-                    expr_input.print(&mut stdout)?;
                     expr_input.record();
+                    expr_input.print(&mut stdout)?;
+                    expr_input.clear();
 
                     match parse(expr_input.expr()) {
                         Ok(expr) => {
