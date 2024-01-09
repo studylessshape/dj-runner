@@ -72,9 +72,9 @@ fn console_runner(env: &mut Environment) {
                         _ => println!("{}", val),
                     };
                 }
-                Err(err) => println!("{:?}", err),
+                Err(err) => println!("{}", err),
             },
-            Err(err) => println!("{:?}", err),
+            Err(err) => println!("{}", err),
             _ => {}
         }
         expr_input.reset();

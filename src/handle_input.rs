@@ -175,7 +175,7 @@ pub fn get_input(expr_input: &mut ExprInput) -> Result<Option<Expr>> {
                             leave_input_mode(&mut stdout)?;
                             return Ok(Some(expr));
                         }
-                        Err(InterpretError::Syntax(dj::SyntaxError::RequrieToken(Token::End(
+                        Err(InterpretError::Syntax(dj::SyntaxError::RequireToken(Token::End(
                             _,
                         )))) => {
                             queue!(stdout, style::Print("\n\r"))?;
