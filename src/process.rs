@@ -1,7 +1,7 @@
 //! This module is for providing some method that is built in runner to `dj`
 
 use dj::{builtin::*, parse};
-use std::{fs, io::Read, process, any::Any};
+use std::{fs, io::Read, process};
 
 use crate::EvalateResult;
 
@@ -12,6 +12,12 @@ pub fn builtin_method(env: &mut Environment) {
     let _ = builtin!(env, builtin_load);
     let _ = builtin!(env, builtin_rem);
     let _ = builtin!(env, builtin_pow);
+    let _ = builtin!(env, builtin_bitnot);
+    let _ = builtin!(env, builtin_bitand);
+    let _ = builtin!(env, builtin_bitor);
+    let _ = builtin!(env, builtin_bitxor);
+    let _ = builtin!(env, builtin_bitshl);
+    let _ = builtin!(env, builtin_bitshr);
 }
 
 /// exit program
@@ -83,56 +89,90 @@ fn builtin_println(content: Option<Value>) -> EvalateResult {
     Ok(Value::Nil)
 }
 
-#[builtin_method("%")]
-fn builtin_rem(a: Value, b: Value) -> EvalateResult {
-    let a = match a {
-        Value::Integer(integer) => integer as f32,
-        Value::Decimal(decimal) => decimal,
-        _ => return Err(RuntimeError::ValueTypeMismatch(a)),
+macro_rules! match_value_to_f32 {
+    ($val: expr) => {
+        match $val {
+            Value::Integer(integer) => Ok(integer as f32),
+            Value::Decimal(decimal) => Ok(decimal),
+            _ => Err(RuntimeError::ValueTypeMismatch($val)),
+        }
     };
+}
 
-    let b = match b {
-        Value::Integer(integer) => integer as f32,
-        Value::Decimal(decimal) => decimal,
-        _ => return Err(RuntimeError::ValueTypeMismatch(b)),
-    };
+#[builtin_method("rem")]
+fn builtin_rem(a: Value, b: Value) -> EvalateResult {
+    let a = match_value_to_f32!(a)?;
+    let b = match_value_to_f32!(b)?;
+
     Ok((a % b).into())
 }
 
-#[builtin_method("^")]
+#[builtin_method("pow")]
 fn builtin_pow(val: Value, pow: Value) -> EvalateResult {
-    let val = match val {
-        Value::Integer(integer) => integer as f32,
-        Value::Decimal(decimal) => decimal,
-        _ => return Err(RuntimeError::ValueTypeMismatch(val)),
-    };
-
-    let pow = match pow {
-        Value::Integer(integer) => integer as f32,
-        Value::Decimal(decimal) => decimal,
-        _ => return Err(RuntimeError::ValueTypeMismatch(pow)),
-    };
+    let val = match_value_to_f32!(val)?;
+    let pow = match_value_to_f32!(pow)?;
 
     Ok(val.powf(pow).into())
 }
 
+macro_rules! value_bit_op {
+    ($val: ident, $op: tt) => {
+        match $val {
+            Value::Boolean(val_bool) => Ok(($op val_bool).into()),
+            Value::Integer(val_i32) =>Ok(($op val_i32).into()),
+            _ => Err(RuntimeError::ValueTypeMismatch($val))
+        }
+    };
+    ($lhs: ident, $rhs: ident, $op: tt) => {
+        match $lhs {
+            Value::Boolean(lhs_bool) => match $rhs {
+                Value::Boolean(rhs) => Ok((lhs_bool $op rhs).into()),
+                _ => Err(RuntimeError::ValueTypeMismatch($rhs)),
+            },
+            Value::Integer(lhs_i32) => match $rhs {
+                Value::Integer(rhs) => Ok((lhs_i32 $op rhs).into()),
+                _ => Err(RuntimeError::ValueTypeMismatch($rhs)),
+            },
+            _ => Err(RuntimeError::ValueTypeMismatch($lhs)),
+        }
+    };
+    ($lhs: ident, $rhs: ident, $op: tt, not bool) => {
+        match $lhs {
+            Value::Integer(lhs_i32) => match $rhs {
+                Value::Integer(rhs) => Ok((lhs_i32 $op rhs).into()),
+                _ => Err(RuntimeError::ValueTypeMismatch($rhs)),
+            },
+            _ => Err(RuntimeError::ValueTypeMismatch($lhs)),
+        }
+    };
+}
+
+#[builtin_method("bitnot")]
+fn builtin_bitnot(val: Value) -> EvalateResult {
+    value_bit_op!(val, !)
+}
+
 #[builtin_method("bitand")]
-fn builtin_bitand(a: Value, b: Value) -> EvalateResult {
-    match a {
-        Value::Boolean(a_bool) => match b {
-            Value::Boolean(b) => Ok((a_bool & b).into()),
-            _ => Err(RuntimeError::ValueTypeMismatch(b)),
-        },
-        Value::Integer(a_i32) => match b {
-            Value::Integer(b) => Ok((a_i32 & b).into()),
-            _ => Err(RuntimeError::ValueTypeMismatch(b)),
-        },
-        _ => Err(RuntimeError::ValueTypeMismatch(a)),
-    }
+fn builtin_bitand(lhs: Value, rhs: Value) -> EvalateResult {
+    value_bit_op!(lhs, rhs, &)
 }
 
 #[builtin_method("bitor")]
-fn builtin_bitor(a: Value, b: Value) -> EvalateResult {
-    a.type_id();
-    todo!()
+fn builtin_bitor(lhs: Value, rhs: Value) -> EvalateResult {
+    value_bit_op!(lhs, rhs, |)
+}
+
+#[builtin_method("bitxor")]
+fn builtin_bitxor(lhs: Value, rhs: Value) -> EvalateResult {
+    value_bit_op!(lhs, rhs, ^)
+}
+
+#[builtin_method("bitshl")]
+fn builtin_bitshl(lhs: Value, rhs: Value) -> EvalateResult {
+    value_bit_op!(lhs, rhs, <<, not bool)
+}
+
+#[builtin_method("bitshr")]
+fn builtin_bitshr(lhs: Value, rhs: Value) -> EvalateResult {
+    value_bit_op!(lhs, rhs, >>, not bool)
 }
