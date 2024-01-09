@@ -1,8 +1,9 @@
 //! This module is for providing some method that is built in runner to `dj`
 
-use crate::parse_expr;
-use dj::builtin::*;
-use std::{fs, io::Read, process};
+use dj::{builtin::*, parse};
+use std::{fs, io::Read, process, any::Any};
+
+use crate::EvalateResult;
 
 pub fn builtin_method(env: &mut Environment) {
     let _ = builtin!(env, builtin_exit);
@@ -25,7 +26,7 @@ pub fn builtin_method(env: &mut Environment) {
 /// (exit 1)
 /// ```
 #[builtin_method("exit")]
-fn builtin_exit(code: Option<i32>) -> Result<Value, RuntimeError> {
+fn builtin_exit(code: Option<i32>) -> EvalateResult {
     match code {
         Some(exit_code) => process::exit(exit_code),
         None => process::exit(0),
@@ -33,7 +34,7 @@ fn builtin_exit(code: Option<i32>) -> Result<Value, RuntimeError> {
 }
 
 /// load file with path and use `Environment` evaluate it after read file content
-fn load_file(env: &mut Environment, path: &str) -> Result<Value, RuntimeError> {
+fn load_file(env: &mut Environment, path: &str) -> EvalateResult {
     // read file
     let mut file = match fs::File::open(path) {
         Ok(f) => f,
@@ -43,7 +44,7 @@ fn load_file(env: &mut Environment, path: &str) -> Result<Value, RuntimeError> {
     file.read_to_string(&mut buf)
         .map_err(|e| RuntimeError::Custom(e.to_string()))?;
     // run in environment
-    match parse_expr(&buf) {
+    match parse(&buf) {
         Ok(expr) => expr.eval(env),
         Err(e) => Err(RuntimeError::Custom(format!("{:?}", e))),
     }
@@ -54,7 +55,7 @@ fn load_file(env: &mut Environment, path: &str) -> Result<Value, RuntimeError> {
 /// (load "sample.dj")
 /// ```
 #[builtin_method("load")]
-fn builtin_load(env: &mut Environment, path: String) -> Result<Value, RuntimeError> {
+fn builtin_load(env: &mut Environment, path: String) -> EvalateResult {
     load_file(env, &path)
 }
 
@@ -64,7 +65,7 @@ fn builtin_load(env: &mut Environment, path: String) -> Result<Value, RuntimeErr
 /// (print 123)
 /// ```
 #[builtin_method("print")]
-fn builtin_print(content: Value) -> Result<Value, RuntimeError> {
+fn builtin_print(content: Value) -> EvalateResult {
     print!("{content}");
     Ok(Value::Nil)
 }
@@ -74,7 +75,7 @@ fn builtin_print(content: Value) -> Result<Value, RuntimeError> {
 /// (println "Hello, World")
 /// ```
 #[builtin_method("println")]
-fn builtin_println(content: Option<Value>) -> Result<Value, RuntimeError> {
+fn builtin_println(content: Option<Value>) -> EvalateResult {
     match content {
         Some(val) => println!("{val}"),
         None => println!(),
@@ -83,7 +84,7 @@ fn builtin_println(content: Option<Value>) -> Result<Value, RuntimeError> {
 }
 
 #[builtin_method("%")]
-fn builtin_rem(a: Value, b: Value) -> Result<Value, RuntimeError> {
+fn builtin_rem(a: Value, b: Value) -> EvalateResult {
     let a = match a {
         Value::Integer(integer) => integer as f32,
         Value::Decimal(decimal) => decimal,
@@ -99,7 +100,7 @@ fn builtin_rem(a: Value, b: Value) -> Result<Value, RuntimeError> {
 }
 
 #[builtin_method("^")]
-fn builtin_pow(val: Value, pow: Value) -> Result<Value, RuntimeError> {
+fn builtin_pow(val: Value, pow: Value) -> EvalateResult {
     let val = match val {
         Value::Integer(integer) => integer as f32,
         Value::Decimal(decimal) => decimal,
@@ -113,4 +114,25 @@ fn builtin_pow(val: Value, pow: Value) -> Result<Value, RuntimeError> {
     };
 
     Ok(val.powf(pow).into())
+}
+
+#[builtin_method("bitand")]
+fn builtin_bitand(a: Value, b: Value) -> EvalateResult {
+    match a {
+        Value::Boolean(a_bool) => match b {
+            Value::Boolean(b) => Ok((a_bool & b).into()),
+            _ => Err(RuntimeError::ValueTypeMismatch(b)),
+        },
+        Value::Integer(a_i32) => match b {
+            Value::Integer(b) => Ok((a_i32 & b).into()),
+            _ => Err(RuntimeError::ValueTypeMismatch(b)),
+        },
+        _ => Err(RuntimeError::ValueTypeMismatch(a)),
+    }
+}
+
+#[builtin_method("bitor")]
+fn builtin_bitor(a: Value, b: Value) -> EvalateResult {
+    a.type_id();
+    todo!()
 }

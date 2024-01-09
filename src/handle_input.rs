@@ -1,4 +1,3 @@
-use crate::parse_expr;
 use anyhow::Result;
 use crossterm::{
     cursor::{self, Hide, MoveTo, Show},
@@ -7,7 +6,7 @@ use crossterm::{
     style::{self, Stylize},
     terminal::{self, disable_raw_mode, enable_raw_mode},
 };
-use dj::{ast::Expr, InterpretError, Token};
+use dj::{ast::Expr, InterpretError, Token, parse};
 use std::io::{stdout, StdoutLock, Write};
 use tui_input::{backend::crossterm as backend, StateChanged};
 use tui_input::{backend::crossterm::EventHandler, Input};
@@ -150,7 +149,7 @@ pub fn get_input(expr_input: &mut ExprInput) -> Result<Option<Expr>> {
                     ),
                     style::Print(": exit by CONTROL C\n")
                 )?;
-                return Ok(Some(parse_expr("(exit 101)")?));
+                return Ok(Some(parse("(exit 101)")?));
             }
             match code {
                 KeyCode::Esc => {
@@ -169,7 +168,7 @@ pub fn get_input(expr_input: &mut ExprInput) -> Result<Option<Expr>> {
                     expr_input.print(&mut stdout)?;
                     expr_input.record();
 
-                    match parse_expr(expr_input.expr()) {
+                    match parse(expr_input.expr()) {
                         Ok(expr) => {
                             // leave input
                             leave_input_mode(&mut stdout)?;

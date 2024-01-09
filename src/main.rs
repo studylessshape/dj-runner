@@ -1,10 +1,9 @@
 use clap::Parser;
-use dj::{ast::Value, Environment, TokenStream};
+use dj::{ast::Value, Environment, TokenStream, parse};
 use dj_runner::{
     builtin_method,
     commands::Commands,
     handle_input::{get_input, ExprInput},
-    parse_expr,
 };
 use std::{fs::File, io::Read};
 
@@ -41,7 +40,7 @@ fn run_file(env: &mut Environment, path: &str) {
         buffer
     };
 
-    let _ = match parse_expr(&src) {
+    let _ = match parse(&src) {
         Ok(expr) => {
             if let Err(err) = expr.eval(env) {
                 println!("{:?}", err);
