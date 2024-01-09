@@ -12,7 +12,8 @@ Running [dj-runner] directly will enter real-time mode. You can use `control + c
 [dependencies]
 clap = { version = "4.4", features = ["derive"]}
 crossterm = "0.27.0"
-dj = { git = "https://gitee.com/study_less_shape/dj-rs", version = "0.1.0", features = ["builtin"]}
+dj = { git = "https://gitee.com/study_less_shape/dj-rs", features = ["builtin"]}
 # dj = { path = "../dj-rs", version = "0.1.0", features = ["builtin"]}
-# dj = { git = "https://gitee.com/ZerAx/dj-rs", version = "0.1.0", features = ["builtin"]}
+# dj = { git = "https://gitee.com/ZerAx/dj-rs", features = ["builtin"]}
 tui-input = "0.8.0"
+anyhow= "*"

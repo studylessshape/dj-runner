@@ -1,4 +1,5 @@
-use crate::{parse_expr, RunnerError};
+use crate::parse_expr;
+use anyhow::Result;
 use crossterm::{
     cursor::{self, Hide, MoveTo, Show},
     event::{read, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers},
@@ -40,7 +41,7 @@ impl ExprInput {
         self.input.handle_event(event)
     }
     /// Call [tui_input::backend::crossterm::write]
-    pub fn write(&self, stdout: &mut StdoutLock) -> Result<(), RunnerError> {
+    pub fn write(&self, stdout: &mut StdoutLock) -> Result<()> {
         backend::write(
             stdout,
             self.input.value(),
@@ -53,7 +54,7 @@ impl ExprInput {
     }
 
     /// Print [tui_input::Input] without cursor
-    pub fn print(&self, stdout: &mut StdoutLock) -> Result<(), RunnerError> {
+    pub fn print(&self, stdout: &mut StdoutLock) -> Result<()> {
         let width = self.width as usize;
         let (column, row) = self.position;
 
@@ -111,7 +112,7 @@ impl ExprInput {
     }
 }
 
-pub fn get_input(expr_input: &mut ExprInput) -> Result<Option<Expr>, RunnerError> {
+pub fn get_input(expr_input: &mut ExprInput) -> Result<Option<Expr>> {
     let mut stdout = stdout().lock();
     // enter input and set input
     enter_input_mode(&mut stdout)?;
@@ -184,7 +185,7 @@ pub fn get_input(expr_input: &mut ExprInput) -> Result<Option<Expr>, RunnerError
                         }
                         Err(err) => {
                             leave_input_mode(&mut stdout)?;
-                            return Err(RunnerError::from(err));
+                            return Err(err.into());
                         }
                     }
                 }
@@ -198,14 +199,14 @@ pub fn get_input(expr_input: &mut ExprInput) -> Result<Option<Expr>, RunnerError
     }
 }
 
-fn enter_input_mode(stdout: &mut StdoutLock) -> Result<(), RunnerError> {
+fn enter_input_mode(stdout: &mut StdoutLock) -> Result<()> {
     enable_raw_mode()?;
     queue!(stdout, style::Print("> "), Hide)?;
     stdout.flush()?;
     Ok(())
 }
 
-fn leave_input_mode(stdout: &mut StdoutLock) -> Result<(), RunnerError> {
+fn leave_input_mode(stdout: &mut StdoutLock) -> Result<()> {
     disable_raw_mode()?;
     queue!(stdout, Show, style::Print("\n"))?;
     stdout.flush()?;

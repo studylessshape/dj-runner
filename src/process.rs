@@ -1,15 +1,13 @@
 //! This module is for providing some method that is built in runner to `dj`
 
+use crate::parse_expr;
+use dj::builtin::*;
 use std::{fs, io::Read, process};
 
-use dj::builtin::*;
-
-use crate::parse_expr;
-
 pub fn builtin_method(env: &mut Environment) {
-    env.set("exit", Value::Builtin(builtin_exit));
-    env.set("println", Value::Builtin(builtin_println));
+    let _ = builtin!(env, builtin_exit);
     let _ = builtin!(env, builtin_print);
+    let _ = builtin!(env, builtin_println);
     let _ = builtin!(env, builtin_load);
     let _ = builtin!(env, builtin_rem);
     let _ = builtin!(env, builtin_pow);
@@ -26,21 +24,12 @@ pub fn builtin_method(env: &mut Environment) {
 /// ```dj
 /// (exit 1)
 /// ```
-fn builtin_exit(env: &mut Environment, para: &[Expr]) -> Result<Value, RuntimeError> {
-    let len = para.len();
-    let exit_code;
-    match len {
-        0 => exit_code = 0,
-        1 => {
-            let code = para[0].eval(env)?;
-            match code {
-                Value::Integer(code) => exit_code = code,
-                _ => return Err(RuntimeError::TypeMismatch(code)),
-            }
-        }
-        _ => return Err(RuntimeError::TooManyArguments { at_most: 1 }),
+#[builtin_method("exit")]
+fn builtin_exit(code: Option<i32>) -> Result<Value, RuntimeError> {
+    match code {
+        Some(exit_code) => process::exit(exit_code),
+        None => process::exit(0),
     }
-    process::exit(exit_code);
 }
 
 /// load file with path and use `Environment` evaluate it after read file content
@@ -84,17 +73,11 @@ fn builtin_print(content: Value) -> Result<Value, RuntimeError> {
 /// ```dj
 /// (println "Hello, World")
 /// ```
-fn builtin_println(env: &mut Environment, params: &[Expr]) -> Result<Value, RuntimeError> {
-    let len = params.len();
-    if len == 0 {
-        println!();
-        return Ok(Value::Nil);
-    } else {
-        let mut i = 0;
-        while i < len {
-            println!("{}", &params[i].eval(env)?);
-            i += 1;
-        }
+#[builtin_method("println")]
+fn builtin_println(content: Option<String>) -> Result<Value, RuntimeError> {
+    match content {
+        Some(str) => println!("{str}"),
+        None => println!(),
     }
     Ok(Value::Nil)
 }
@@ -104,13 +87,13 @@ fn builtin_rem(a: Value, b: Value) -> Result<Value, RuntimeError> {
     let a = match a {
         Value::Integer(integer) => integer as f32,
         Value::Decimal(decimal) => decimal,
-        _ => return Err(RuntimeError::TypeMismatch(a)),
+        _ => return Err(RuntimeError::ValueTypeMismatch(a)),
     };
 
     let b = match b {
         Value::Integer(integer) => integer as f32,
         Value::Decimal(decimal) => decimal,
-        _ => return Err(RuntimeError::TypeMismatch(b)),
+        _ => return Err(RuntimeError::ValueTypeMismatch(b)),
     };
     Ok((a % b).into())
 }
@@ -120,13 +103,13 @@ fn builtin_pow(val: Value, pow: Value) -> Result<Value, RuntimeError> {
     let val = match val {
         Value::Integer(integer) => integer as f32,
         Value::Decimal(decimal) => decimal,
-        _ => return Err(RuntimeError::TypeMismatch(val)),
+        _ => return Err(RuntimeError::ValueTypeMismatch(val)),
     };
 
     let pow = match pow {
         Value::Integer(integer) => integer as f32,
         Value::Decimal(decimal) => decimal,
-        _ => return Err(RuntimeError::TypeMismatch(pow)),
+        _ => return Err(RuntimeError::ValueTypeMismatch(pow)),
     };
 
     Ok(val.powf(pow).into())

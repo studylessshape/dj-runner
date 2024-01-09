@@ -6,5 +6,5 @@ use clap::Parser;
 #[command(version, about)]
 pub struct Commands {
     /// The file is specified to run
-    pub file_path: Option<String>
+    pub file_path: Option<String>,
 }
