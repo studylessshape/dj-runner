@@ -1,6 +1,6 @@
 //! This module is for providing some method that is built in runner to `dj`
 
-use dj::{builtin::*, parse};
+use dj::{builtin::*, *};
 use std::{fs, io::Read, process};
 
 use crate::EvalateResult;

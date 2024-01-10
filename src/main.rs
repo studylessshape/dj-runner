@@ -1,5 +1,5 @@
 use clap::Parser;
-use dj::{ast::Value, Environment, TokenStream, parse};
+use dj::{Value, Environment, TokenStream, parse};
 use dj_runner::{
     builtin_method,
     commands::Commands,
@@ -59,7 +59,7 @@ fn run_file(env: &mut Environment, path: &str) {
 
 fn console_runner(env: &mut Environment, is_cut: bool) {
     println!("dj-runner -- Version {}", env!("CARGO_PKG_VERSION"));
-    println!("(core) dj language(dj-rs) -- Version {}", "0.1.1");
+    println!("(core) dj language(dj-rs) -- Version {}", "0.2.1");
 
     let mut expr_input = ExprInput::new(is_cut);
     loop {

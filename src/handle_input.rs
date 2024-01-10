@@ -19,7 +19,6 @@ pub struct ExprInput {
     pub width: u16,
     history: Vec<String>,
     his_index: Option<usize>,
-    line: usize,
     is_cut: bool,
 }
 
@@ -39,7 +38,6 @@ impl ExprInput {
         self.input.reset();
         self.total.clear();
         self.his_index = None;
-        self.line = 0;
     }
 
     pub fn handle_input_event(&mut self, event: &Event) -> Option<StateChanged> {
