@@ -84,28 +84,18 @@ fn builtin_println(content: Option<Value>) -> EvalateResult {
     Ok(Value::Nil)
 }
 
-macro_rules! match_value_to_f32 {
-    ($val: expr) => {
-        match $val {
-            Value::Integer(integer) => Ok(integer as f32),
-            Value::Decimal(decimal) => Ok(decimal),
-            _ => Err(RuntimeError::ValueTypeMismatch($val)),
-        }
-    };
-}
-
 #[builtin_method("rem")]
 fn builtin_rem(a: Value, b: Value) -> EvalateResult {
-    let a = match_value_to_f32!(a)?;
-    let b = match_value_to_f32!(b)?;
+    let a: f32 = a.try_into()?;
+    let b: f32 = b.try_into()?;
 
     Ok((a % b).into())
 }
 
 #[builtin_method("pow")]
 fn builtin_pow(val: Value, pow: Value) -> EvalateResult {
-    let val = match_value_to_f32!(val)?;
-    let pow = match_value_to_f32!(pow)?;
+    let val: f32 = val.try_into()?;
+    let pow: f32 = pow.try_into()?;
 
     Ok(val.powf(pow).into())
 }
