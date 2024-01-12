@@ -66,7 +66,7 @@ fn builtin_load(path: String, env: &mut Environment) -> EvalateResult {
 /// (print 123)
 /// ```
 #[builtin_method("print")]
-fn builtin_print(content: Value, _env: &mut Environment, _exprs: Vec<Expr>) -> EvalateResult {
+fn builtin_print(content: Value) -> EvalateResult {
     print!("{content}");
     Ok(Value::Nil)
 }
