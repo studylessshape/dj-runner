@@ -85,18 +85,12 @@ fn builtin_println(content: Option<Value>) -> EvalateResult {
 }
 
 #[builtin_method("rem")]
-fn builtin_rem(a: Value, b: Value) -> EvalateResult {
-    let a: f32 = a.try_into()?;
-    let b: f32 = b.try_into()?;
-
+fn builtin_rem(a: f32, b: f32) -> EvalateResult {
     Ok((a % b).into())
 }
 
 #[builtin_method("pow")]
-fn builtin_pow(val: Value, pow: Value) -> EvalateResult {
-    let val: f32 = val.try_into()?;
-    let pow: f32 = pow.try_into()?;
-
+fn builtin_pow(val: f32, pow: f32) -> EvalateResult {
     Ok(val.powf(pow).into())
 }
 
