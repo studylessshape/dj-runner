@@ -39,8 +39,12 @@ fn builtin_exit(code: Option<i32>) -> EvalateResult {
     }
 }
 
-/// load file with path and use `Environment` evaluate it after read file content
-fn load_file(env: &mut Environment, path: &str) -> EvalateResult {
+/// Command like:
+/// ```dj
+/// (load "sample.dj")
+/// ```
+#[builtin_method("load")]
+fn builtin_load(path: String, env: &mut Environment) -> EvalateResult {
     // read file
     let mut file = match fs::File::open(path) {
         Ok(f) => f,
@@ -58,20 +62,11 @@ fn load_file(env: &mut Environment, path: &str) -> EvalateResult {
 
 /// Command like:
 /// ```dj
-/// (load "sample.dj")
-/// ```
-#[builtin_method("load")]
-fn builtin_load(env: &mut Environment, path: String) -> EvalateResult {
-    load_file(env, &path)
-}
-
-/// Command like:
-/// ```dj
 /// (print "Hello")
 /// (print 123)
 /// ```
 #[builtin_method("print")]
-fn builtin_print(content: Value) -> EvalateResult {
+fn builtin_print(content: Value, _env: &mut Environment, _exprs: Vec<Expr>) -> EvalateResult {
     print!("{content}");
     Ok(Value::Nil)
 }
@@ -116,14 +111,14 @@ fn builtin_pow(val: Value, pow: Value) -> EvalateResult {
 }
 
 macro_rules! value_bit_op {
-    ($val: ident, $op: tt) => {
+    ($val: tt, $op: tt) => {
         match $val {
             Value::Boolean(val_bool) => Ok(($op val_bool).into()),
             Value::Integer(val_i32) =>Ok(($op val_i32).into()),
             _ => Err(RuntimeError::ValueTypeMismatch($val))
         }
     };
-    ($lhs: ident, $rhs: ident, $op: tt) => {
+    ($lhs: tt, $rhs: tt, $op: tt) => {
         match $lhs {
             Value::Boolean(lhs_bool) => match $rhs {
                 Value::Boolean(rhs) => Ok((lhs_bool $op rhs).into()),
@@ -136,7 +131,7 @@ macro_rules! value_bit_op {
             _ => Err(RuntimeError::ValueTypeMismatch($lhs)),
         }
     };
-    ($lhs: ident, $rhs: ident, $op: tt, not bool) => {
+    ($lhs: tt, $rhs: tt, $op: tt, not bool) => {
         match $lhs {
             Value::Integer(lhs_i32) => match $rhs {
                 Value::Integer(rhs) => Ok((lhs_i32 $op rhs).into()),
