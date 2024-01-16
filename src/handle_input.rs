@@ -90,11 +90,7 @@ impl ExprInput {
         };
         // record current input
         if self.input.value().len() != 0 {
-            if self.is_cut {
-                self.history.push(push_expr.clone());
-            } else {
-                self.history.push(push_expr.clone());
-            }
+            self.history.push(push_expr.clone()); 
             self.his_index = None;
         }
         // push in total
