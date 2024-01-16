@@ -4,7 +4,7 @@ version = "0.2.1"
 edition = "2021"
 description = """
 [dj-runner] is the console that can run [dj] directly by sentence or file.
-Running [dj-runner] directly will enter real-time mode. You can use `control + c` to exit program or specify the file to run."""
+Running [dj-runner] directly will enter real-time mode. You can use `control + c` to exit program."""
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
