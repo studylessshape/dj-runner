@@ -13,6 +13,8 @@ clap = { version = "4.4", features = ["derive"] }
 crossterm = "0.27.0"
 # dj = { git = "https://gitee.com/study_less_shape/dj-rs", features = ["builtin"] }
 # dj = { path = "../dj-rs", features = ["builtin"]}
-dj = { git = "https://gitee.com/ZerAx/dj-rs", features = ["builtin"]}
+dj = { git = "https://gitee.com/ZerAx/dj-rs", branch = "0.2", features = [
+    "builtin",
+] }
 tui-input = "0.8.0"
 anyhow = "*"

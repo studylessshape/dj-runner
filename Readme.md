@@ -1,4 +1,7 @@
 # dj-runner
+
+**⚠dj-runner stay the v0.2.3 of dj and not update again⚠**
+
 The runner is for language [dj](https://gitee.com/ZerAx/dj-rs).
 
 The previous version can be found in [dj](https://gitee.com/ZerAx/dj-rs/tree/master/examples/runner). I try to use [crossterm](https://docs.rs/crossterm) and [tui-input](https://docs.rs/tui-input/) to perfect the experience of input.
