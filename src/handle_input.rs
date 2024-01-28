@@ -6,7 +6,7 @@ use crossterm::{
     style::{self, Stylize},
     terminal::{self, disable_raw_mode, enable_raw_mode},
 };
-use dj::{ast::Expr, parse, InterpretError, Token};
+use dj::{parse, Expr, comptime::{Error as CompileError, lexer::Error as LexError, parser::Error as ParseError}, };
 use std::io::{stdout, StdoutLock, Write};
 use tui_input::{backend::crossterm as backend, StateChanged};
 use tui_input::{backend::crossterm::EventHandler, Input};
@@ -200,9 +200,7 @@ pub fn get_input(expr_input: &mut ExprInput) -> Result<Option<Expr>> {
                             leave_input_mode(&mut stdout)?;
                             return Ok(Some(expr));
                         }
-                        Err(InterpretError::Syntax(dj::SyntaxError::RequireToken(Token::End(
-                            _,
-                        )))) => {
+                        Err(CompileError::Lex(LexError::UnclosedString)) | Err(CompileError::Parse(ParseError::UnclosedGroup)) => {
                             queue!(stdout, style::Print("\n\r"))?;
                             stdout.flush()?;
                             expr_input.position = cursor::position()?;

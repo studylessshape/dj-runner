@@ -1,27 +1,27 @@
 use clap::Parser;
-use dj::{Value, Environment, TokenStream, parse};
+use dj::{parse, runtime::EnvExt, Env, Value};
 use dj_runner::{
     builtin_method,
     commands::Commands,
     handle_input::{get_input, ExprInput},
 };
-use std::{fs::File, io::Read};
+use std::{fs::File, io::Read, rc::Rc};
 
 fn main() {
-    let mut env = Environment::new();
+    let env = Env::root();
 
-    builtin_method(&mut env);
+    builtin_method(env.clone());
 
     let cli = Commands::parse();
 
     match cli.file_path {
-        Some(path) => run_file(&mut env, &path),
-        None => console_runner(&mut env, cli.cut_input),
+        Some(path) => run_file(env, &path),
+        None => console_runner(env, cli.cut_input),
     }
 }
 
 /// Rune [dj] from file. Same of `(load '<file>')`
-fn run_file(env: &mut Environment, path: &str) {
+fn run_file(env: Rc<Env>, path: &str) {
     let src = {
         let mut file = match File::open(path) {
             Ok(f) => f,
@@ -40,31 +40,26 @@ fn run_file(env: &mut Environment, path: &str) {
         buffer
     };
 
-    let _ = match parse(&src) {
+    let _ = match parse(src) {
         Ok(expr) => {
-            if let Err(err) = expr.eval(env) {
+            if let Err(err) = env.eval(expr) {
                 println!("{:?}", err);
             }
         }
         Err(err) => {
-            let mut fullts = TokenStream::try_from(src.as_str()).unwrap();
-            println!("Runtime Error: {err}\nToken Stream:");
-            while let Ok(tok) = fullts.pop() {
-                println!("{tok:?}");
-            }
-            println!("parsing error.");
+            println!("Parse Error: {err}\nToken Stream:");
         }
     };
 }
 
-fn console_runner(env: &mut Environment, is_cut: bool) {
+fn console_runner(env: Rc<Env>, is_cut: bool) {
     println!("dj-runner -- Version {}", env!("CARGO_PKG_VERSION"));
-    println!("(core) dj language(dj-rs) -- Version {}", "0.2.3");
+    println!("(core) dj language(dj-rs) -- Version {}", "0.3");
 
     let mut expr_input = ExprInput::new(is_cut);
     loop {
         match get_input(&mut expr_input) {
-            Ok(Some(ex)) => match ex.eval(env) {
+            Ok(Some(ex)) => match env.eval(ex) {
                 Ok(val) => {
                     match val {
                         Value::Nil => println!(),
