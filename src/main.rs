@@ -54,7 +54,7 @@ fn run_file(env: Rc<Env>, path: &str) {
 
 fn console_runner(env: Rc<Env>, is_cut: bool) {
     println!("dj-runner -- Version {}", env!("CARGO_PKG_VERSION"));
-    println!("(core) dj language(dj-rs) -- Version {}", "0.3");
+    println!("(core) dj language(dj-rs) -- Version {}", dj::version());
 
     let mut expr_input = ExprInput::new(is_cut);
     loop {
