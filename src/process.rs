@@ -4,10 +4,10 @@ use dj::{builtin::{*, dependency::*}, parse, runtime::Error as RuntimeError, Env
 use std::{fs, io::Read, process, rc::Rc};
 
 pub fn builtin_method(env: Rc<Env>) {
-    builtin!(env, "exit", builtin_exit);
-    builtin!(env,"print", builtin_print);
-    builtin!(env, "println", builtin_println);
-    builtin!(env, "load", builtin_load);
+    builtin!(env, builtin_exit);
+    builtin!(env, builtin_print);
+    builtin!(env, builtin_println);
+    builtin!(env, builtin_load);
 }
 
 /// exit program
@@ -21,7 +21,7 @@ pub fn builtin_method(env: Rc<Env>) {
 /// ```dj
 /// (exit 1)
 /// ```
-#[builtin_method]
+#[builtin_method("exit")]
 fn builtin_exit(code: Option<i32>) -> EvalResult {
     match code {
         Some(exit_code) => process::exit(exit_code),
@@ -33,7 +33,7 @@ fn builtin_exit(code: Option<i32>) -> EvalResult {
 /// ```dj
 /// (load "sample.dj")
 /// ```
-#[builtin_method]
+#[builtin_method("load")]
 fn builtin_load(path: String, env: Rc<Env>) -> EvalResult {
     // read file
     let mut file = match fs::File::open(path) {
@@ -55,7 +55,7 @@ fn builtin_load(path: String, env: Rc<Env>) -> EvalResult {
 /// (print "Hello")
 /// (print 123)
 /// ```
-#[builtin_method]
+#[builtin_method("print")]
 fn builtin_print(content: Value) -> EvalResult {
     print!("{content}");
     Ok(Value::Nil)
@@ -65,7 +65,7 @@ fn builtin_print(content: Value) -> EvalResult {
 /// ```dj
 /// (println "Hello, World")
 /// ```
-#[builtin_method]
+#[builtin_method("println")]
 fn builtin_println(content: Option<Value>) -> EvalResult {
     match content {
         Some(val) => println!("{val}"),
