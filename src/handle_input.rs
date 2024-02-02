@@ -89,12 +89,12 @@ impl ExprInput {
             self.input.value().trim_end().to_string()
         };
         // record current input
-        if self.input.value().len() != 0 {
+        if !self.input.value().is_empty() {
             self.history.push(push_expr.clone()); 
             self.his_index = None;
         }
         // push in total
-        if self.total.len() != 0 {
+        if !self.total.is_empty() {
             self.total.push('\n');
         }
         self.total.push_str(&push_expr);
