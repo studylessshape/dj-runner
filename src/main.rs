@@ -40,7 +40,7 @@ fn run_file(env: Rc<Env>, path: &str) {
         buffer
     };
 
-    let _ = match parse(src) {
+    match parse(src) {
         Ok(expr) => {
             if let Err(err) = env.eval(expr) {
                 println!("{:?}", err);
