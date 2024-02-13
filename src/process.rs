@@ -8,6 +8,7 @@ pub fn builtin_method(env: Rc<Env>) {
     builtin!(env, builtin_print);
     builtin!(env, builtin_println);
     builtin!(env, builtin_load);
+    builtin!(env, builtin_rem);
 }
 
 /// exit program
@@ -72,4 +73,9 @@ fn builtin_println(content: Option<Value>) -> EvalResult {
         None => println!(),
     }
     Ok(Value::Nil)
+}
+
+#[builtin_method("%")]
+fn builtin_rem(lhs: f32, rhs: f32) -> EvalResult {
+    Ok(Value::from(lhs % rhs))
 }
